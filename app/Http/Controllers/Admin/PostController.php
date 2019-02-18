@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PostStoreRequest;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\PostUpdateRequest;
+use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Contracts\Filesystem\disk;
 
 class PostController extends Controller
@@ -80,6 +81,8 @@ class PostController extends Controller
     public function show($id)
     {
         $post = Post::findOrFail($id);
+        $this->authorize('pass', $post); // si es mio elimina el post (Control de Acceso)
+        
         return view('admin.posts.show', compact('post'));
     }
 
@@ -91,10 +94,13 @@ class PostController extends Controller
      */
     public function edit($id)
     {
+          $post = Post::findOrFail($id);
+          $this->authorize('pass', $post); // si es mio elimina el post (Control de Acceso)
+
           $categories = Category::orderBy('name', 'ASC')->pluck('name', 'id'); 
           $tags = Tag::orderBy('name', 'ASC')->get(); 
+          
 
-         $post = Post::findOrFail($id);
         return view('admin.posts.edit', compact('post', 'categories', 'tags'));
     }
 
@@ -108,6 +114,8 @@ class PostController extends Controller
     public function update(PostUpdateRequest $request, $id)
     {
          $post = Post::findOrFail($id);
+         $this->authorize('pass', $post); // si es mio elimina el post (Control de Acceso)
+
          $post->fill($request->all())->save();
 
           //Image
@@ -134,7 +142,10 @@ class PostController extends Controller
      */
     public function destroy($id)
     {
-         $post = Post::findOrFail($id)->delete();
+         $post = Post::findOrFail($id);
+         $this->authorize('pass', $post); // si es mio elimina el post (Control de Acceso)
+         $post->delete();
+
          return back()->with('info','Eliminado correctamente');
 
     }
